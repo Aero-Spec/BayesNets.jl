@@ -1,15 +1,15 @@
 # Usage
 
 ```@setup bayesnet
-using BayesNets, TikzGraphs, TikzPictures
+using BayesNets
+using Compose
 ```
 
 ```julia
 using Random
-Random.seed!(0) # seed the random number generator to 0, for a reproducible demonstration
 using BayesNets
-using TikzGraphs # required to plot tex-formatted graphs (recommended), otherwise GraphPlot.jl is used
-using TikzPictures
+using Compose
+Random.seed!(0)
 ```
 
 ## Representation
@@ -25,8 +25,8 @@ a = \mathcal{N}(0,1) \qquad b = \mathcal{N}(2a +3,1)
 bn = BayesNet()
 push!(bn, StaticCPD(:a, Normal(1.0)))
 push!(bn, LinearGaussianCPD(:b, [:a], [2.0], 3.0, 1.0))
-plot = BayesNets.plot(bn)
-TikzPictures.save(SVG("plot1"), plot)
+p = BayesNets.plot(bn)
+draw(SVG("plot1.svg", 400px, 400px), p)
 ```
 
 ![](plot1.svg)
@@ -56,8 +56,8 @@ cpdA = fit(StaticCPD{Normal}, data, :a)
 cpdB = fit(LinearGaussianCPD, data, :b, [:a])
 
 bn2 = BayesNet([cpdA, cpdB])
-plot = BayesNets.plot(bn2) # hide
-TikzPictures.save(SVG("plot2"), plot) # hide
+p = BayesNets.plot(bn2)
+draw(SVG("plot2.svg", 400px, 400px), p)
 ```
 
 ![](plot2.svg)
@@ -88,8 +88,8 @@ The NamedCategorical distribution allows for String or Symbol return values. The
 bn2 = BayesNet()
 push!(bn2, StaticCPD(:sighted, NamedCategorical([:bird, :plane, :superman], [0.40, 0.55, 0.05])))
 push!(bn2, FunctionalCPD{Bernoulli}(:happy, [:sighted], a->Bernoulli(a == :superman ? 0.95 : 0.2)))
-plot = BayesNets.plot(bn2) # hide
-TikzPictures.save(SVG("plot3"), plot) # hide
+p = BayesNets.plot(bn2)
+draw(SVG("plot3.svg", 400px, 400px), p)
 ```
 
 ![](plot3.svg)
@@ -98,8 +98,8 @@ Variables can be removed by name using `delete!`. A warning will be issued when 
 
 ```@example bayesnet
 delete!(bn2, :happy)
-plot = BayesNets.plot(bn2) # hide
-TikzPictures.save(SVG("plot4"), plot) # hide
+p = BayesNets.plot(bn2)
+draw(SVG("plot4.svg", 400px, 400px), p)
 ```
 
 ![](plot4.svg)
@@ -153,8 +153,8 @@ bn = BayesNet()
 push!(bn, StaticCPD(:a, Categorical([0.3,0.7])))
 push!(bn, StaticCPD(:b, Categorical([0.6,0.4])))
 push!(bn, CategoricalCPD{Bernoulli}(:c, [:a, :b], [2,2], [Bernoulli(0.1), Bernoulli(0.2), Bernoulli(1.0), Bernoulli(0.4)]))
-plot = BayesNets.plot(bn) # hide
-TikzPictures.save(SVG("plot5"), plot) # hide
+p = BayesNets.plot(bn)
+draw(SVG("plot5.svg", 400px, 400px), p)
 ```
 
 ![](plot5.svg)
@@ -202,8 +202,8 @@ b=[1,1,1,2,2,2,2,1,1,2,1,1],
 a=[1,1,1,2,1,1,2,1,1,2,1,1])
 
 bn5 = fit(DiscreteBayesNet, data, (:a=>:b, :a=>:c, :b=>:c))
-plot = BayesNets.plot(bn5) # hide
-TikzPictures.save(SVG("plot6"), plot) # hide
+p = BayesNets.plot(bn5)
+draw(SVG("plot6.svg", 400px, 400px), p)
 ```
 
 ![](plot6.svg)
@@ -230,8 +230,8 @@ push!(bn, DiscreteCPD(:c, [:a, :b], [2,2],
          Categorical([0.4,0.6]),
         ]))
 
-plot = BayesNets.plot(bn) # hide
-TikzPictures.save(SVG("plot7"), plot) # hide
+p = BayesNets.plot(bn)
+draw(SVG("plot7.svg", 400px, 400px), p)
 ```
 
 ![](plot7.svg)
@@ -288,8 +288,8 @@ parameters = K2GraphSearch([:Species, :SepalLength, :SepalWidth, :PetalLength, :
                        max_n_parents=2)
 bn = fit(BayesNet, data, parameters)
 
-plot = BayesNets.plot(bn) # hide
-TikzPictures.save(SVG("plot8"), plot) # hide
+p = BayesNets.plot(bn)
+draw(SVG("plot8.svg", 400px, 400px), p)
 ```
 
 ![](plot8.svg)
@@ -317,8 +317,8 @@ data = DataFrame(c=[1,1,1,1,2,2,2,2,3,3,3,3],
 parameters = GreedyHillClimbing(ScoreComponentCache(data), max_n_parents=3, prior=UniformPrior())
 bn = fit(DiscreteBayesNet, data, parameters)
 
-plot = BayesNets.plot(bn) # hide
-TikzPictures.save(SVG("plot9"), plot) # hide
+p = BayesNets.plot(bn)
+draw(SVG("plot9.svg", 400px, 400px), p)
 ```
 
 ![](plot9.svg)
@@ -358,8 +358,8 @@ Discrete Bayesian Networks can be read from the .XDSL file format.
 ```@example bayesnet
 bn = readxdsl(joinpath(dirname(pathof(BayesNets)), "..", "test", "sample_bn.xdsl"))
 
-plot = BayesNets.plot(bn) # hide
-TikzPictures.save(SVG("plot10"), plot) # hide
+p = BayesNets.plot(bn)
+draw(SVG("plot10.svg", 400px, 400px), p)
 ```
 
 ![](plot10.svg)
