@@ -1,14 +1,16 @@
+```@meta
+CurrentModule = BayesNets
+```
 # Usage
 
 ```@setup bayesnet
 using BayesNets
 using Compose
-```
-
-```julia
+import Compose: SVG
+using DataFrames
+using Distributions
 using Random
-using BayesNets
-using Compose
+using Graphs
 Random.seed!(0)
 ```
 
@@ -26,7 +28,7 @@ bn = BayesNet()
 push!(bn, StaticCPD(:a, Normal(1.0)))
 push!(bn, LinearGaussianCPD(:b, [:a], [2.0], 3.0, 1.0))
 p = BayesNets.plot(bn)
-draw(SVG("plot1.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot1.svg"), 400, 400), p)
 ```
 
 ![](plot1.svg)
@@ -57,7 +59,7 @@ cpdB = fit(LinearGaussianCPD, data, :b, [:a])
 
 bn2 = BayesNet([cpdA, cpdB])
 p = BayesNets.plot(bn2)
-draw(SVG("plot2.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot2.svg"), 400, 400), p)
 ```
 
 ![](plot2.svg)
@@ -66,7 +68,7 @@ Each `CPD` implements four functions:
 
 * `name(cpd)` - obtain the name of the variable target variable
 * `parents(cpd)` - obtain the list of parents
-* `nparams(cpd` - obtain the number of free parameters in the CPD
+* `nparams(cpd)` - obtain the number of free parameters in the CPD
 * `cpd(assignment)` - allows calling `cpd()` to obtain the conditional distribution
 * `Distributions.fit(Type{CPD}, data, target, parents)`
 
@@ -89,7 +91,7 @@ bn2 = BayesNet()
 push!(bn2, StaticCPD(:sighted, NamedCategorical([:bird, :plane, :superman], [0.40, 0.55, 0.05])))
 push!(bn2, FunctionalCPD{Bernoulli}(:happy, [:sighted], a->Bernoulli(a == :superman ? 0.95 : 0.2)))
 p = BayesNets.plot(bn2)
-draw(SVG("plot3.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot3.svg"), 400, 400), p)
 ```
 
 ![](plot3.svg)
@@ -99,7 +101,7 @@ Variables can be removed by name using `delete!`. A warning will be issued when 
 ```@example bayesnet
 delete!(bn2, :happy)
 p = BayesNets.plot(bn2)
-draw(SVG("plot4.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot4.svg"), 400, 400), p)
 ```
 
 ![](plot4.svg)
@@ -154,7 +156,7 @@ push!(bn, StaticCPD(:a, Categorical([0.3,0.7])))
 push!(bn, StaticCPD(:b, Categorical([0.6,0.4])))
 push!(bn, CategoricalCPD{Bernoulli}(:c, [:a, :b], [2,2], [Bernoulli(0.1), Bernoulli(0.2), Bernoulli(1.0), Bernoulli(0.4)]))
 p = BayesNets.plot(bn)
-draw(SVG("plot5.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot5.svg"), 400, 400), p)
 ```
 
 ![](plot5.svg)
@@ -203,7 +205,7 @@ a=[1,1,1,2,1,1,2,1,1,2,1,1])
 
 bn5 = fit(DiscreteBayesNet, data, (:a=>:b, :a=>:c, :b=>:c))
 p = BayesNets.plot(bn5)
-draw(SVG("plot6.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot6.svg"), 400, 400), p)
 ```
 
 ![](plot6.svg)
@@ -231,7 +233,7 @@ push!(bn, DiscreteCPD(:c, [:a, :b], [2,2],
         ]))
 
 p = BayesNets.plot(bn)
-draw(SVG("plot7.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot7.svg"), 400, 400), p)
 ```
 
 ![](plot7.svg)
@@ -289,7 +291,7 @@ parameters = K2GraphSearch([:Species, :SepalLength, :SepalWidth, :PetalLength, :
 bn = fit(BayesNet, data, parameters)
 
 p = BayesNets.plot(bn)
-draw(SVG("plot8.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot8.svg"), 400, 400), p)
 ```
 
 ![](plot8.svg)
@@ -318,7 +320,7 @@ parameters = GreedyHillClimbing(ScoreComponentCache(data), max_n_parents=3, prio
 bn = fit(DiscreteBayesNet, data, parameters)
 
 p = BayesNets.plot(bn)
-draw(SVG("plot9.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot9.svg"), 400, 400), p)
 ```
 
 ![](plot9.svg)
@@ -359,7 +361,7 @@ Discrete Bayesian Networks can be read from the .XDSL file format.
 bn = readxdsl(joinpath(dirname(pathof(BayesNets)), "..", "test", "sample_bn.xdsl"))
 
 p = BayesNets.plot(bn)
-draw(SVG("plot10.svg", 400, 400), p)
+draw(SVG(joinpath(@__DIR__, "plot10.svg"), 400, 400), p)
 ```
 
 ![](plot10.svg)
@@ -374,5 +376,5 @@ data = DataFrame(c=[1,1,1,1,2,2,2,2,3,3,3,3],
                  a=[1,1,1,2,1,1,2,1,1,2,1,1])
 g = DAG(3)
 add_edge!(g,1,2); add_edge!(g,2,3); add_edge!(g,1,3)
-bayesian_score(g, [:a,:b,:c], data)
+BayesNets.bayesian_score(g, [:a, :b, :c], data)
 ```
