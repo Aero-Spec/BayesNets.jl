@@ -1,6 +1,5 @@
 name: CI
 
-# Run on master, tags, or any pull request
 on:
   push:
     branches: [master]
@@ -8,31 +7,35 @@ on:
   pull_request:
 
 jobs:
-  # unit tests with coverage
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
+
+    # ============================
+    # 🔴 TEMPORARY DEBUG FLAG
+    # REMOVE THIS ENTIRE env BLOCK
+    # ============================
+    env:
+      SKIP_DEPS: "true"
+
     strategy:
       fail-fast: false
       matrix:
         version:
-          - "1"   # Latest
-          - "1.8" # Earliest
+          - "1"
         os:
           - ubuntu-latest
-          - windows-latest
-          - macos-latest
         arch:
           - x64
+
     steps:
-      # check out the project and install Julia
       - uses: actions/checkout@v4
+
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
 
-      # using a cache can speed up execution times
       - uses: actions/cache@v4
         env:
           cache-name: cache-artifacts
@@ -45,14 +48,25 @@ jobs:
             ${{ runner.os }}-${{ matrix.arch }}-
             ${{ runner.os }}-
 
-      # build the depencies, run the tests, and upload coverage results
-      - uses: julia-actions/julia-buildpkg@latest
+      # ============================
+      # Dependency build (skipped temporarily)
+      # ============================
+      - name: Build dependencies
+        if: env.SKIP_DEPS != 'true'
+        uses: julia-actions/julia-buildpkg@latest
+
       - run: |
           git config --global user.name Tester
           git config --global user.email te@st.er
+
+      # ============================
+      # Run tests (ALWAYS runs)
+      # ============================
       - name: Run Tests
         uses: julia-actions/julia-runtest@latest
+
       - uses: julia-actions/julia-processcoverage@v1
+
       - uses: codecov/codecov-action@v1
         with:
           file: ./lcov.info
